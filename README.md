@@ -1,13 +1,21 @@
 # How to interface the Neato XV11 LIDAR
 
-![](doc/screenshot.png)
+This is a short documentation for the LIDAR used in the Neato XV11 vacuum robots. It has two connectors, one for the motor and one for the communication (serial port).
+The actual name of the sensor is Piccolo Laser Distance Sensor, abbreviated into LDS, but many different names are used to refer to it: 
+Neato LDS, Neato lidar, XV-11 lidar, XV-11 sensor...
+
+Here is a photo of one of my specimen connected to a PC via a usb-to-serial ftdi dongle:
 
 ![](doc/ftdi.jpg)
 
+This repository contains an intentionally short C++ code that reads the steady flow the LIDAR sends to the host.
+Here is a screenshot of the output:
 
+![](doc/screenshot.png)
 
-The actual name of the sensor is Piccolo Laser Distance Sensor, abbreviated into LDS, but many different names are used to refer to it: 
-Neato LDS, Neato lidar, XV-11 lidar, XV-11 sensor...
+I did not want to write any visualization code, this snipped is meant to be used direcly on robots.
+If you want some GUI to test your LIDAR, [check this](https://github.com/Xevel/NXV11) (beware, it requires python2 and vpython 6).
+A very nice printed base for the LIDAR is available [here](https://www.thingiverse.com/thing:796866/).
 
 ## Hardware versions
 
@@ -122,21 +130,22 @@ fabric, grid, edge of an object...), or maybe when there are parasitic reflectio
 Bytes 2 and 3 are the LSB and MSB of the strength indication. This value can get very high when facing a retroreflector.
 * checksum is a two-byte checksum of the packet.
 The algorithm is as follows, provided that `data` is the list of the 20 first bytes, in the same order they arrived in.
+
 ```python
 def checksum(data):
- """Compute and return the checksum as an int."""
- # group the data by word, little-endian
- data_list = []
- for t in range(10):
- data_list.append( data[2*t] + (data[2*t+1]<<8) )
- # compute the checksum on 32 bits
- chk32 = 0
- for d in data_list:
- chk32 = (chk32 << 1) + d
- # return a value wrapped around on 15bits, and truncated to still fit into 15 bits
- checksum = (chk32 & 0x7FFF) + ( chk32 >> 15 ) # wrap around to fit into 15 bits
- checksum = checksum & 0x7FFF # truncate to 15 bits
- return int( checksum )
+    """Compute and return the checksum as an int."""
+    # group the data by word, little-endian
+    data_list = []
+    for t in range(10):
+        data_list.append( data[2*t] + (data[2*t+1]<<8) )
+    # compute the checksum on 32 bits
+    chk32 = 0
+    for d in data_list:
+        chk32 = (chk32 << 1) + d
+    # return a value wrapped around on 15bits, and truncated to still fit into 15 bits
+    checksum = (chk32 & 0x7FFF) + ( chk32 >> 15 ) # wrap around to fit into 15 bits
+    checksum = checksum & 0x7FFF # truncate to 15 bits
+    return int( checksum )
 ```
 
 

@@ -30,12 +30,12 @@ int count_errors(unsigned char *buf) { // 1980 bytes in the buffer (90 packets)
 }
 
 // No return/max range/too low of reflectivity
-bool flag1(unsigned char *data) { // 4 bytes in the data buffer
+bool invalid_data_flag(unsigned char *data) { // 4 bytes in the data buffer
     return (data[1] & 0x80) >> 7;
 }
 
 // Object too close, possible poor reading due to proximity kicks in at < 0.6m
-bool flag2(unsigned char *data) { // 4 bytes in the data buffer
+bool strength_warning_flag(unsigned char *data) { // 4 bytes in the data buffer
     return (data[1] & 0x40) >> 6;
 }
 
@@ -53,7 +53,7 @@ void print_all_data(unsigned char *buf) {
         std::cerr << "#rpm: " << rpm(buf + p*22) << std::endl;
         for (int i=0; i<4; i++) {
             unsigned char *data = buf + p*22 + 4 + i*4;
-            if (flag1(data)) continue;
+            if (invalid_data_flag(data)) continue;
             std::cerr << "angle: " << angle_degrees << "\tdistance: " << dist_mm(data) << std::endl;
             angle_degrees++;
         }
