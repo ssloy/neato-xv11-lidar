@@ -43,14 +43,17 @@ Sensor current consumption (does not include the motor): ~45mA idle (not rotatin
 If powered at 3.3V, you may get data. Or you may get some version information like the following:
 
 ```
+Terminal ready
+:)
 Piccolo Laser Distance Scanner
-Copyright (c) 2009-2010 Neato Robotics, Inc.
+Copyright (c) 2009-2011 Neato Robotics, Inc.
 All Rights Reserved
-Loader V2.1.11383
-CPU F2802x/cd00
-Serial AAA30710AA-0000549
-LastCal [2008031847]
-Runtime V2.6.14138
+
+Loader  V2.5.15295
+CPU     F2802x/c001
+Serial  WTD04513AA-0233345
+LastCal [5371726C]
+Runtime V2.6.15295
 ```
 
 Pinout:
