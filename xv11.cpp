@@ -22,19 +22,17 @@ bool verify_packet_checksum(unsigned char *packet) { // 22 bytes in the packet
 int count_errors(unsigned char *buf) { // 1980 bytes in the buffer (90 packets)
     int nb_err = 0;
     for (int i=0; i<90; i++) {
-        if (!verify_packet_checksum(buf+i*22)) {
-            nb_err++;
-        }
+        nb_err += !verify_packet_checksum(buf+i*22);
     }
     return nb_err;
 }
 
-// No return/max range/too low of reflectivity
+// no return/max range/too low of reflectivity
 bool invalid_data_flag(unsigned char *data) { // 4 bytes in the data buffer
     return (data[1] & 0x80) >> 7;
 }
 
-// Object too close, possible poor reading due to proximity kicks in at < 0.6m
+// object too close, possible poor reading due to proximity; kicks in at < 0.6m
 bool strength_warning_flag(unsigned char *data) { // 4 bytes in the data buffer
     return (data[1] & 0x40) >> 6;
 }
@@ -48,14 +46,14 @@ int signal_strength(unsigned char *data) { // 4 bytes in the data buffer
 }
 
 void print_all_data(unsigned char *buf) {
-    int angle_degrees = 0;
-    for (int p=0; p<90; p++) {
+    for (int p=0; p<90; p++) { // for all 90 packets
         std::cerr << "#rpm: " << rpm(buf + p*22) << std::endl;
-        for (int i=0; i<4; i++) {
-            unsigned char *data = buf + p*22 + 4 + i*4;
-            if (invalid_data_flag(data)) continue;
-            std::cerr << "angle: " << angle_degrees << "\tdistance: " << dist_mm(data) << std::endl;
-            angle_degrees++;
+        for (int i=0; i<4; i++) { // process 4 chunks per packet
+            unsigned char *data = buf + p*22 + 4 + i*4; // current chunk pointer
+            if (!invalid_data_flag(data)) {
+                int angle_degrees = p*4+i;
+                std::cerr << "angle: " << angle_degrees << "\tdistance: " << dist_mm(data) << std::endl;
+            }
         }
     }
 }
@@ -67,18 +65,15 @@ int main(int argc, char *argv[]) {
         serial_port = argv[1];
     }
 
-    struct termios tty_opt;
-    int tty_fd;
-
     std::cerr << "Opening serial port " << serial_port << std::endl;
-    tty_fd = open(serial_port, O_RDWR);
+    int tty_fd = open(serial_port, O_RDWR);
     if (tty_fd < 0) {
         std::cerr << "Could not open port " << serial_port << std::endl;
         return -1;
     }
 
+    struct termios tty_opt;
     memset(&tty_opt, 0, sizeof(tty_opt));
-
     tty_opt.c_cflag = CS8 | CLOCAL | CREAD; // 8N1
     tty_opt.c_iflag = 0;
     tty_opt.c_oflag = 0;
@@ -95,13 +90,12 @@ int main(int argc, char *argv[]) {
     int idx = 0;
     while (1) {
         if (0==idx && 1==read(tty_fd, buf, 1) && 0xFA==buf[0]) {
-            if (1==read(tty_fd, buf+1, 1) && 0xA0==buf[1]) {
-                for (idx=2; idx<1980; idx++) {
-                    if (1!=read(tty_fd, buf+idx, 1))
-                        break;
+            if (1==read(tty_fd, buf+1, 1) && 0xA0==buf[1]) { // find the header 0xFA 0xA0
+                for (idx=2; idx<1980; idx++) { // register all the 360 readings (90 packets, 22 bytesh each)
+                    if (1!=read(tty_fd, buf+idx, 1)) break;
                 }
-                if (0==count_errors(buf)) {
-                    print_all_data(buf);
+                if (!count_errors(buf)) { // if no errors during the transmission
+                    print_all_data(buf);  // then print the data to the screen
                 }
                 idx = 0;
             }
