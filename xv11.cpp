@@ -29,17 +29,22 @@ int count_errors(unsigned char *buf) { // 1980 bytes in the buffer (90 packets)
     return nb_err;
 }
 
-void print_sample(unsigned char *data, int angle_degrees) { // 4 bytes in the data buffer
-    int flag1 = (data[1] & 0x80) >> 7;  // No return/max range/too low of reflectivity
-    int flag2 = (data[1] & 0x40) >> 6;  // Object too close, possible poor reading due to proximity kicks in at < 0.6m
-    if (flag1) return;
+// No return/max range/too low of reflectivity
+bool flag1(unsigned char *data) { // 4 bytes in the data buffer
+    return (data[1] & 0x80) >> 7;
+}
 
-    float angle = angle_degrees*M_PI/180.f;
+// Object too close, possible poor reading due to proximity kicks in at < 0.6m
+bool flag2(unsigned char *data) { // 4 bytes in the data buffer
+    return (data[1] & 0x40) >> 6;
+}
 
-    int dist_mm  = data[0] | (( data[1] & 0x3F) << 8);  // 14 bits for the distance
-    int strength = data[2] | (data[3] << 8);            // 16 bits for the signal strength
+int dist_mm(unsigned char *data) { // 4 bytes in the data buffer
+    return data[0] | (( data[1] & 0x3F) << 8);  // 14 bits for the distance
+}
 
-    std::cerr << "angle: " << angle << "\tdistance: " << dist_mm << std::endl;
+int signal_strength(unsigned char *data) { // 4 bytes in the data buffer
+    return data[2] | (data[3] << 8); // 16 bits for the signal strength
 }
 
 void print_all_data(unsigned char *buf) {
@@ -47,7 +52,10 @@ void print_all_data(unsigned char *buf) {
     for (int p=0; p<90; p++) {
         std::cerr << "#rpm: " << rpm(buf + p*22) << std::endl;
         for (int i=0; i<4; i++) {
-            print_sample(buf + p*22 + 4 + i*4, angle_degrees++);
+            unsigned char *data = buf + p*22 + 4 + i*4;
+            if (flag1(data)) continue;
+            std::cerr << "angle: " << angle_degrees << "\tdistance: " << dist_mm(data) << std::endl;
+            angle_degrees++;
         }
     }
 }
