@@ -59,7 +59,7 @@ Pinout:
 * OrangeLDS_TX
 * Black GND
 
-Once again, **N.B.** In all versions, LDS_TX and LDS_RX are a 8N1 serial port at **3.3V**. The baud rate is 115200.
+**N.B.** Once again, even for the 5V version, LDS_TX and LDS_RX at **3.3V**.
 
 ## Motor
 The motor has to be driven by the host. 
