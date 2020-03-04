@@ -8,6 +8,8 @@ Here is a photo of one of my specimen connected to a PC via a usb-to-serial ftdi
 
 ![](doc/ftdi.jpg)
 
+Note that the `LDS_RX` pin (the brown wire, more on the pinout below) is not used (I do not know and I do not want to flash the LIDAR).
+
 This repository contains an intentionally short C++ code that reads the steady flow the LIDAR sends to the host.
 Here is a screenshot of the output:
 
@@ -16,6 +18,8 @@ Here is a screenshot of the output:
 I did not want to write any visualization code, this snipped is meant to be used direcly on robots.
 If you want some GUI to test your LIDAR, [check this](https://github.com/Xevel/NXV11) (beware, it requires python2 and vpython 6).
 A very nice printed base for the LIDAR is available [here](https://www.thingiverse.com/thing:796866/).
+Also check for the [USB2LDS](http://www.xevelabs.com/doku.php?id=product:usb2lds:usb2lds) module that guarantees steady motor RPM and
+provides the usb-to-serial functionality.
 
 ## Hardware versions
 
