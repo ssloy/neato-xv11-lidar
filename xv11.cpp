@@ -40,7 +40,7 @@ bool flag2(unsigned char *data) { // 4 bytes in the data buffer
 }
 
 int dist_mm(unsigned char *data) { // 4 bytes in the data buffer
-    return data[0] | (( data[1] & 0x3F) << 8);  // 14 bits for the distance
+    return data[0] | (( data[1] & 0x3F) << 8); // 14 bits for the distance
 }
 
 int signal_strength(unsigned char *data) { // 4 bytes in the data buffer
