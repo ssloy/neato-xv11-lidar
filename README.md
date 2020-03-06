@@ -1,11 +1,11 @@
 # How to interface the Neato XV11 LIDAR
 
 This is a short documentation for the LIDAR used in the Neato XV11 vacuum robots. 
-** N.B. ** I am talking about the sensors salvaged from Neato Robotics robots. If you want a device that works with the 360 Laser Distance Sensor LDS-01, you need another code.
+
+**N.B.** I am talking about the sensors salvaged from Neato Robotics robots. If you want a snippet that works with the more recent 360 Laser Distance Sensor LDS-01, it is not here.
 
 The LIDAR has two connectors, one for the motor and one for the communication (serial port).
-The actual name of the sensor is Piccolo Laser Distance Sensor, abbreviated into LDS, but many different names are used to refer to it: 
-Neato LDS, Neato lidar, XV-11 lidar, XV-11 sensor...
+The actual name of the sensor is Piccolo Laser Distance Sensor, abbreviated into LDS, but many different names are used to refer to it: Neato LDS, Neato lidar, XV-11 lidar, XV-11 sensor...
 
 Here is a photo of one of my specimen connected to a PC via a usb-to-serial ftdi dongle:
 
