@@ -1,21 +1,17 @@
 #include <iostream>
-#include <cmath>
-#include <fstream>
 #include <cstring>
 #include <unistd.h>
 #include <termios.h>
 #include <fcntl.h>
 
-// parse the packet, return the RPM reading
 float rpm(unsigned char *packet) { // 22 bytes in the packet
     return float(packet[2] | ((packet[3]<<8))) / 64.f;
 }
 
 bool verify_packet_checksum(unsigned char *packet) { // 22 bytes in the packet
     int checksum32 = 0;
-    for (int i=0; i<10; i++) {
+    for (int i=0; i<10; i++)
         checksum32 = (checksum32<<1) + packet[2*i] + (packet[2*i+1]<<8);
-    }
     return packet[20]+(packet[21]<<8) == (((checksum32 & 0x7FFF) + (checksum32 >> 15)) & 0x7FFF);
 }
 
@@ -58,6 +54,20 @@ void print_all_data(unsigned char *buf) {
     }
 }
 
+void init_serial_port(int &tty_fd) { // 115200 baud 8n1 blocking read
+    struct termios tty_opt;
+    memset(&tty_opt, 0, sizeof(tty_opt));
+    tty_opt.c_cflag = CS8 | CLOCAL | CREAD; // CS8: 8n1, CLOCAL: local connection, no modem contol, CREAD: enable receiving characters
+    tty_opt.c_iflag = 0;
+    tty_opt.c_oflag = 0;
+    tty_opt.c_lflag = 0;     // non-canonical mode
+    tty_opt.c_cc[VMIN] = 1;  // blocking read until 1 character arrives
+    tty_opt.c_cc[VTIME] = 0; // inter-character timer unused
+    cfsetospeed(&tty_opt, B115200);
+    cfsetispeed(&tty_opt, B115200);
+    tcsetattr(tty_fd, TCSANOW, &tty_opt);
+}
+
 int main(int argc, char *argv[]) {
     const char default_port[] = "/dev/ttyUSB0";
     char *serial_port = (char *)default_port;
@@ -71,36 +81,19 @@ int main(int argc, char *argv[]) {
         std::cerr << "Could not open port " << serial_port << std::endl;
         return -1;
     }
-
-    struct termios tty_opt;
-    memset(&tty_opt, 0, sizeof(tty_opt));
-    tty_opt.c_cflag = CS8 | CLOCAL | CREAD; // 8N1
-    tty_opt.c_iflag = 0;
-    tty_opt.c_oflag = 0;
-    tty_opt.c_lflag = 0;     // noncanonical mode
-    tty_opt.c_cc[VMIN] = 1;  // one char is enough
-    tty_opt.c_cc[VTIME] = 0; // no timer
-
-    cfsetospeed(&tty_opt, B115200); // 115200 baud
-    cfsetispeed(&tty_opt, B115200); // 115200 baud
-
-    tcsetattr(tty_fd, TCSANOW, &tty_opt);
+    init_serial_port(tty_fd);
 
     unsigned char buf[1980];
-    int idx = 0;
     while (1) {
-        if (0==idx && 1==read(tty_fd, buf, 1) && 0xFA==buf[0]) {
-            if (1==read(tty_fd, buf+1, 1) && 0xA0==buf[1]) { // find the header 0xFA 0xA0
-                for (idx=2; idx<1980; idx++) { // register all the 360 readings (90 packets, 22 bytesh each)
-                    if (1!=read(tty_fd, buf+idx, 1)) break;
-                }
-                if (!count_errors(buf)) { // if no errors during the transmission
-                    print_all_data(buf);  // then print the data to the screen
-                }
-                idx = 0;
+        if (1==read(tty_fd, buf, 1) && 0xFA==buf[0] && 1==read(tty_fd, buf+1, 1) && 0xA0==buf[1]) { // find the header 0xFA 0xA0
+            for (int idx=2; idx<1980; idx++) // register all the 360 readings (90 packets, 22 bytesh each)
+                if (1!=read(tty_fd, buf+idx, 1)) break;
+            if (!count_errors(buf)) { // if no errors during the transmission
+                print_all_data(buf);  // then print the data to the screen
             }
         }
     }
+
     close(tty_fd);
     return 0;
 }
