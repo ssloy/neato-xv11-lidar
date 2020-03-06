@@ -1,6 +1,9 @@
 # How to interface the Neato XV11 LIDAR
 
-This is a short documentation for the LIDAR used in the Neato XV11 vacuum robots. It has two connectors, one for the motor and one for the communication (serial port).
+This is a short documentation for the LIDAR used in the Neato XV11 vacuum robots. 
+** N.B. ** I am talking about the sensors salvaged from Neato Robotics robots. If you want a device that works with the 360 Laser Distance Sensor LDS-01, you need another code.
+
+The LIDAR has two connectors, one for the motor and one for the communication (serial port).
 The actual name of the sensor is Piccolo Laser Distance Sensor, abbreviated into LDS, but many different names are used to refer to it: 
 Neato LDS, Neato lidar, XV-11 lidar, XV-11 sensor...
 
@@ -8,18 +11,16 @@ Here is a photo of one of my specimen connected to a PC via a usb-to-serial ftdi
 
 ![](doc/ftdi.jpg)
 
-Note that the `LDS_RX` pin (the brown wire, more on the pinout below) is not used (I do not know and I do not want to flash the LIDAR).
+Note that the `LDS_RX` pin (the brown wire, more on the pinout below) is not used (I do not want to flash the LIDAR and anyways I do not know how to do it).
 
 This repository contains an intentionally short C++ code that reads the steady flow the LIDAR sends to the host.
 Here is a screenshot of the output:
 
 ![](doc/screenshot.png)
 
-I did not want to write any visualization code, this snipped is meant to be used direcly on robots.
-If you want some GUI to test your LIDAR, [check this](https://github.com/Xevel/NXV11) (beware, it requires python2 and vpython 6).
-A very nice printed base for the LIDAR is available [here](https://www.thingiverse.com/thing:796866/).
-Also check for the [USB2LDS](http://www.xevelabs.com/doku.php?id=product:usb2lds:usb2lds) module that guarantees steady motor RPM and
-provides the usb-to-serial functionality.
+I did not want to write any visualization code, this snipped is meant to be used direcly on linux-running robots.
+If you want some GUI to test your LIDAR, [check this](https://github.com/Xevel/NXV11) (beware, it requires python2 and vpython 6). A very nice printed base for the LIDAR is available [here](https://www.thingiverse.com/thing:796866/).
+Also check for the [USB2LDS](http://www.xevelabs.com/doku.php?id=product:usb2lds:usb2lds) module that guarantees steady motor RPM and provides the usb-to-serial functionality.
 
 ## Hardware versions
 
@@ -69,11 +70,7 @@ Pinout:
 **N.B.** Once again, even for the 5V version, LDS_TX and LDS_RX at **3.3V**.
 
 ## Motor
-The motor has to be driven by the host. 
-In the robot, it's that main board that drives it using PWM from the battery voltage of 12V, as it also controls the speed in closed loop.
-The motor can be powered at 3.3V continuous ( ~60mA ) in open loop, which will produce a turn rate of around 240rpm on a clean and recent sensor.
-Hair and dust can however create friction that will lower the rotation speed.
-Using the turn rate information contained in the data, a closed loop control can be implemented, and is recommended.
+The motor has to be driven by the host. In the robot, it's that main board that drives it using PWM from the battery voltage of 12V, as it also controls the speed in closed loop. The motor can be powered at 3.3V continuous ( ~60mA ) in open loop, which will produce a turn rate of around 240rpm on a clean and recent sensor. Hair and dust can however create friction that will lower the rotation speed. Using the turn rate information contained in the data, a closed loop control can be implemented, and is recommended.
 
 Pinout:
 * Red PWR
